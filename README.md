@@ -6,8 +6,9 @@ If it ever forgets, CI catches it before anyone sees it. Reviewed translations a
 Your i18n library, your catalogs, your model.
 
 > [!IMPORTANT]
-> **Design stage.** Nothing is published yet. Every command, output and transcript below shows the
-> *intended* experience; the `i18n-companion` package is not on npm yet. We're looking for
+> **Early release (v0.1, not on npm yet).** The CLI, the MCP server and the assistant skill work
+> on Next.js App Router projects that use next-intl. The transcripts below are illustrative: real
+> output is plainer, and the counts and ids will differ. We're looking for
 > [pilot apps and contributors](#get-involved).
 
 **Pilot scope:** Next.js App Router · [next-intl](https://next-intl.dev) with JSON (ICU) catalogs ·
@@ -63,7 +64,7 @@ Will write:
 ? Write these 5 files? Yes
 
 ✓ Ready. Try in Claude Code: "Localize the checkout screen into fr, hi and ar"
-  Undo any time: npx i18n-companion uninstall --preview
+  Undo any time: npx i18n-companion uninstall   (previews; add --yes to remove)
 ```
 
 | Assistant   | Skill installed to                     | Always-on rule |
@@ -85,9 +86,10 @@ planning edits, checking ICU) and does the language work itself.
 i18n-companion doctor --json                             supported · next-intl
 i18n-companion audit --paths src/app/checkout --json     14 found · 2 need you
 i18n-companion plan --paths src/app/checkout             plan p-0c41 · 12 messages · 3 files
-i18n-companion batch --plan p-0c41 --next                batch-17 · 12 × 3 locales
-i18n-companion import --plan p-0c41 --input batch.json   35 staged · 1 retried
-i18n-companion check --plan p-0c41 && … apply            applied · 5 files
+i18n-companion batch --plan p-0c41                       batch b1 · 12 messages · fr
+i18n-companion import --plan p-0c41 --input batch.json   12 staged · 1 retried
+i18n-companion check --plan p-0c41                       ok
+i18n-companion apply --plan p-0c41                       applied · 5 files
 pnpm typecheck && pnpm test && pnpm build            passed
 ```
 
@@ -140,8 +142,7 @@ Each locale gets the plural forms its language actually uses. Arabic has six:
 | `Checkout.items` (3) | 3 items  | 3 articles         | 3 आइटम              | 3 عناصر      |
 | `Checkout.payNow` | Pay now     | Payer maintenant   | अभी भुगतान करें       | ادفع الآن    |
 
-Prices and counts are formatted with `Intl` for each locale, Arabic renders right-to-left, and a
-pseudo-locale (`en-XA`) stretches every string so you can spot layouts that break with longer text.
+Prices and counts are formatted with `Intl` for each locale and Arabic renders right-to-left.
 Product names stay as they are: they are data, not UI.
 
 ## 5. Just build
@@ -250,17 +251,14 @@ On a setup it doesn't support yet, it says so and changes nothing.
 ```console
 $ npx i18n-companion doctor
 
-  ✓ framework     Next.js 15 · App Router
-  ✗ i18n library  i18next 23 + react-i18next
-                  no adapter yet (planned after the pilot)
-  ✗ catalogs      public/locales/{lng}/{ns}.json
-                  i18next format, not ICU
+Framework: next 15.5.0 (app)
+i18n library: i18next 25.0.0
+Support: audit-only
+  error   I18N_UNSUPPORTED_LIBRARY  This project uses i18next, which has no adapter yet. Nothing will be changed.
+          → For this setup today, i18next-cli covers extraction and sync.
+Not ready; see the notes above.
 
-Nothing was changed.
-Audit written to .i18n-companion/work/audit.md
-  142 candidate strings · 9 files · 3 dynamic keys
-
-For this setup today, i18next-cli covers extraction and sync.
+$ npx i18n-companion audit      # still works: a read-only list of hardcoded strings
 ```
 
 **It will never:**
@@ -321,19 +319,50 @@ flowchart LR
 
 Assistant mode needs no extra API key, and your code is never sent to us.
 
-**Planned packages**
+**Package layout**
+
+One npm package. Node 22.17 or newer.
 
 ```text
-packages/
-  core/                    registry, plans, revisions, diagnostics, validation
-  cli/                     init · doctor · audit · plan · batch · import · check · apply · watch
-  adapter-next-intl/       first framework and catalog adapter
-  assistant-integration/   one skill template, installed for each assistant
-  mcp/                     later: stdio wrapper over the same core
-  runtime-server/          later: opt-in translation of dynamic content
+i18n-companion              CLI (bin), programmatic API, MCP server
+i18n-companion/runtime      opt-in server-side translation of dynamic content
+
+src/
+  core/                     registry, plans, revisions, diagnostics, ICU validation, check
+  adapters/next-intl/       TypeScript AST analysis and source rewriting
+  assistant/                skill and rule templates, install and uninstall
+  mcp/                      stdio server over the same core
+  cli/                      the commands below
+  providers/                Claude provider for unattended translation
+  runtime/                  cached, tenant-scoped content translation with fallback
 ```
 
-**Proposed config**
+Provider mode and the runtime use the Anthropic SDK, an optional peer dependency:
+`npm install --save-dev @anthropic-ai/sdk`. Assistant mode does not need it.
+
+**Commands**
+
+| Command | What it does |
+| --- | --- |
+| `init` | Writes the config, the assistant skill, the always-on rule and the MCP entry, after showing each file (`--dry-run`, `--yes`) |
+| `doctor` | Is this project supported, and is the config valid? |
+| `setup` | Prints the next-intl setup recipe for a project without i18n; never edits `next.config` |
+| `audit` | Read-only scan for hardcoded text; works with no config and on unsupported projects |
+| `plan` | Finds hardcoded text and translation work and saves a plan (`--paths`, `--no-code`, `--locales`) |
+| `batch` / `import` | Hands out one batch to translate, then validates and stages the answer |
+| `check` | Checks a plan (`--plan`) or the whole project for CI (`--changed`, `--files`) |
+| `apply` | Writes a checked plan in one transaction that restores everything if a write fails |
+| `translate` | Provider mode: plan, translate and apply without an assistant |
+| `status` / `review` / `sync` | Translation state per message, mark reviewed, accept or reject proposals |
+| `watch` | Re-checks (or, in provider mode, translates) on every save |
+| `run-checks` | Runs the `package.json` scripts named in the config |
+| `runbook` | The step-by-step procedure, for assistants without a skill |
+| `mcp` | Runs the MCP server over stdio |
+| `uninstall` | Removes only what `init` installed; previews unless `--yes` |
+
+Every command takes `--json`. Exit codes: 0 ok, 1 validation failed, 2 usage or configuration error.
+
+**Config**
 
 ```ts
 export default {
@@ -364,7 +393,7 @@ export default {
 
 ## Get involved
 
-The project is at the design stage. The fastest way to make it useful is to try it on real apps and
+The project is early. The fastest way to make it useful is to try it on real apps and
 real languages early. [Open an issue](../../issues/new) to:
 
 - **Lend an app for the pilot**: a Next.js app on next-intl, or a small one with no i18n yet. We'll

@@ -46,7 +46,6 @@
   },
   "files": [
     "dist",
-    "templates",
     "README.md",
     "LICENSE"
   ],
@@ -61,6 +60,14 @@
     "@modelcontextprotocol/sdk": "^1.32.2",
     "typescript": "^5.9.3",
     "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=1.10.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^1.10.0",
