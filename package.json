@@ -1,0 +1,70 @@
+{
+  "name": "i18n-companion",
+  "version": "0.1.0",
+  "description": "A companion for Claude Code, Codex and Cursor that localizes your Next.js app as your coding agent builds it, and keeps translations correct as it changes.",
+  "license": "MIT",
+  "author": "Hamza Shaikh",
+  "type": "module",
+  "homepage": "https://github.com/enigma49/i18n-companion#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enigma49/i18n-companion.git"
+  },
+  "bugs": {
+    "url": "https://github.com/enigma49/i18n-companion/issues"
+  },
+  "keywords": [
+    "i18n",
+    "localization",
+    "next-intl",
+    "nextjs",
+    "icu",
+    "claude-code",
+    "codex",
+    "cursor",
+    "mcp",
+    "ai-agents"
+  ],
+  "engines": {
+    "node": ">=22.17"
+  },
+  "bin": {
+    "i18n-companion": "dist/cli/bin.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && chmod +x dist/cli/bin.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^2.11.4",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "typescript": "^5.9.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
+    "@types/node": "^22.20.5",
+    "vitest": "^5.1.1"
+  }
+}
