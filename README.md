@@ -5,10 +5,13 @@ If it ever forgets, CI catches it before anyone sees it. Reviewed translations a
 
 Your i18n library, your catalogs, your model.
 
-> [!IMPORTANT]
-> **Early release (v0.1, not on npm yet).** The CLI, the MCP server and the assistant skill work
-> on Next.js App Router projects that use next-intl. The transcripts below are illustrative: real
-> output is plainer, and the counts and ids will differ. We're looking for
+```bash
+npx i18n-companion init
+```
+
+> **Early release (v0.1).** The CLI, the MCP server and the assistant skill work on Next.js App
+> Router projects that use next-intl, on Node 22.17 or newer. The transcripts below are
+> illustrative: real output is plainer, and the counts and ids will differ. We're looking for
 > [pilot apps and contributors](#get-involved).
 
 **Pilot scope:** Next.js App Router · [next-intl](https://next-intl.dev) with JSON (ICU) catalogs ·
@@ -298,16 +301,14 @@ A small deterministic core, with the model at the edges.
 | Summarizes changed files and what it could not do | Refuses to apply a plan if files changed since planning |
 | | Never runs a command that a translation response suggests |
 
-```mermaid
-flowchart LR
-    A[Your coding assistant] --> B[Skill + CLI]
-    B --> C[Deterministic core]
-    C --> D[next-intl adapter]
-    C --> E[Plans and message registry]
-    C --> F[Validation and controlled writes]
-    A --> G[Translation proposals]
-    G --> C
-    F --> H[Your existing i18n runtime]
+```text
+Your coding assistant ──▶ Skill + CLI or MCP ──▶ Deterministic core ──▶ next-intl adapter
+        │                                          │
+        └── translation proposals ────────────────▶├── plans and message registry
+                                                   └── validation and controlled writes
+                                                                │
+                                                                ▼
+                                                   your existing i18n runtime
 ```
 
 **Who translates?**
@@ -394,7 +395,7 @@ export default {
 ## Get involved
 
 The project is early. The fastest way to make it useful is to try it on real apps and
-real languages early. [Open an issue](../../issues/new) to:
+real languages early. [Open an issue](https://github.com/enigma49/i18n-companion/issues/new) to:
 
 - **Lend an app for the pilot**: a Next.js app on next-intl, or a small one with no i18n yet. We'll
   localize one screen and share what broke.
@@ -404,4 +405,4 @@ real languages early. [Open an issue](../../issues/new) to:
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/enigma49/i18n-companion/blob/main/LICENSE)
