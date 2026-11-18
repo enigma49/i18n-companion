@@ -1,4 +1,4 @@
-# i18n-agent
+# i18n-companion
 
 **Install it once into Claude Code, Codex or Cursor, and your coding agent localizes as it builds.
 If it ever forgets, CI catches it before anyone sees it. Reviewed translations are never overwritten.**
@@ -7,8 +7,7 @@ Your i18n library, your catalogs, your model.
 
 > [!IMPORTANT]
 > **Design stage.** Nothing is published yet. Every command, output and transcript below shows the
-> *intended* experience, and `@your-org/i18n-agent` is a placeholder package name (the final npm
-> name is not chosen yet). We're looking for
+> *intended* experience; the `i18n-companion` package is not on npm yet. We're looking for
 > [pilot apps and contributors](#get-involved).
 
 **Pilot scope:** Next.js App Router · [next-intl](https://next-intl.dev) with JSON (ICU) catalogs ·
@@ -39,7 +38,7 @@ One command detects your project, asks one question, and previews every file bef
 It never rewrites your existing agent instructions.
 
 ```console
-$ npx @your-org/i18n-agent init
+$ npx i18n-companion init
 
 Detecting project…
   ✓ package manager   pnpm (workspace root)
@@ -56,22 +55,22 @@ Detecting project…
   Always-on rule    › yes           1 line in CLAUDE.md, so new UI text is localized unasked
 
 Will write:
-  + i18n-agent.config.ts
-  + .claude/skills/i18n-agent/SKILL.md          v0.1.0, owned by installer
-  + .i18n-agent/registry.json                   message ids, revisions, review state
-  ~ .gitignore                                  + .i18n-agent/work/
+  + i18n-companion.config.ts
+  + .claude/skills/i18n-companion/SKILL.md          v0.1.0, owned by installer
+  + .i18n-companion/registry.json                   message ids, revisions, review state
+  ~ .gitignore                                  + .i18n-companion/work/
   ~ CLAUDE.md                                   + 1 line, nothing else touched
 ? Write these 5 files? Yes
 
 ✓ Ready. Try in Claude Code: "Localize the checkout screen into fr, hi and ar"
-  Undo any time: npx @your-org/i18n-agent uninstall --preview
+  Undo any time: npx i18n-companion uninstall --preview
 ```
 
 | Assistant   | Skill installed to                     | Always-on rule |
 | ----------- | -------------------------------------- | -------------- |
-| Claude Code | `.claude/skills/i18n-agent/SKILL.md`   | `CLAUDE.md`    |
-| Codex       | `.agents/skills/i18n-agent/SKILL.md`   | `AGENTS.md`    |
-| Cursor      | `.cursor/skills/i18n-agent/SKILL.md`   | `AGENTS.md`    |
+| Claude Code | `.claude/skills/i18n-companion/SKILL.md`   | `CLAUDE.md`    |
+| Codex       | `.agents/skills/i18n-companion/SKILL.md`   | `AGENTS.md`    |
+| Cursor      | `.cursor/skills/i18n-companion/SKILL.md`   | `AGENTS.md`    |
 
 ## 2. Ask your assistant
 
@@ -83,12 +82,12 @@ planning edits, checking ICU) and does the language work itself.
 > needs a manual decision.
 
 ```console
-i18n-agent doctor --json                             supported · next-intl
-i18n-agent audit --paths src/app/checkout --json     14 found · 2 need you
-i18n-agent plan --paths src/app/checkout             plan p-0c41 · 12 messages · 3 files
-i18n-agent batch --plan p-0c41 --next                batch-17 · 12 × 3 locales
-i18n-agent import --plan p-0c41 --input batch.json   35 staged · 1 retried
-i18n-agent check --plan p-0c41 && … apply            applied · 5 files
+i18n-companion doctor --json                             supported · next-intl
+i18n-companion audit --paths src/app/checkout --json     14 found · 2 need you
+i18n-companion plan --paths src/app/checkout             plan p-0c41 · 12 messages · 3 files
+i18n-companion batch --plan p-0c41 --next                batch-17 · 12 × 3 locales
+i18n-companion import --plan p-0c41 --input batch.json   35 staged · 1 retried
+i18n-companion check --plan p-0c41 && … apply            applied · 5 files
 pnpm typecheck && pnpm test && pnpm build            passed
 ```
 
@@ -167,7 +166,7 @@ const t = await getTranslations('Settings.notifications');
 If it ever forgets, CI stops it:
 
 ```console
-$ i18n-agent check --changed
+$ i18n-companion check --changed
 
 ✗ I18N_HARDCODED_STRING
     src/app/settings/notifications/quiet-hours.tsx:34
@@ -182,7 +181,7 @@ agent can miss a string, a teammate may not have the skill installed, and code w
 passes through the agent.
 
 **Benchmark (planned):** 20 everyday feature requests that never mention translations, run with no
-i18n-agent, with the skill only, and with the skill plus the one-line rule. We'll publish the
+i18n-companion, with the skill only, and with the skill plus the one-line rule. We'll publish the
 results for each supported assistant before v0.1, along with the prompts, so anyone can rerun them.
 
 ## 6. When the wording changes
@@ -207,7 +206,7 @@ Example: `Checkout.payNow` changes from "Pay now" to "Pay securely".
 | hi     | अभी भुगतान करें · `machine-validated`  | `stale`, text kept    | सुरक्षित भुगतान करें · `machine-validated`                |
 | ar     | ادفع الآن · `draft`                 | `stale`, text kept    | ادفع بأمان · `machine-validated`                     |
 
-An optional `i18n-agent watch` notices edits as you save and queues the work for your assistant
+An optional `i18n-companion watch` notices edits as you save and queues the work for your assistant
 (or, in provider mode, finishes it unattended).
 
 ## 7. Validation and CI
@@ -231,7 +230,7 @@ then left out and reported, and the app keeps showing the source-language fallba
 ```
 
 ```console
-$ i18n-agent check --json
+$ i18n-companion check --json
 
   locales     en   fr   hi   ar
   coverage   100  100  100  100
@@ -249,7 +248,7 @@ $ i18n-agent check --json
 On a setup it doesn't support yet, it says so and changes nothing.
 
 ```console
-$ npx @your-org/i18n-agent doctor
+$ npx i18n-companion doctor
 
   ✓ framework     Next.js 15 · App Router
   ✗ i18n library  i18next 23 + react-i18next
@@ -258,7 +257,7 @@ $ npx @your-org/i18n-agent doctor
                   i18next format, not ICU
 
 Nothing was changed.
-Audit written to .i18n-agent/work/audit.md
+Audit written to .i18n-companion/work/audit.md
   142 candidate strings · 9 files · 3 dynamic keys
 
 For this setup today, i18next-cli covers extraction and sync.
@@ -284,7 +283,7 @@ Good tools already exist. Use the one that fits.
 | [i18next-cli](https://github.com/i18next/i18next-cli) | Extraction, instrumentation and sync for i18next, with its own agent runbook | Your app uses i18next or react-i18next |
 | [Lingo.dev Compiler](https://lingo.dev/en/docs/react/compiler/vite-react) | Compile-time localization for React, updating translations as you develop (alpha) | You'd rather not manage message keys yourself |
 | [next-intl agent workflows](https://next-intl.dev/docs/workflows/agents) | The library's own guidance for working with AI agents | You want the official path and are happy to steer the agent yourself |
-| **i18n-agent** | A companion for the assistant you already use: stable message ids, review states and validation kept in your repo | You have next-intl catalogs and reviewers, and want each change to touch only what changed |
+| **i18n-companion** | A companion for the assistant you already use: stable message ids, review states and validation kept in your repo | You have next-intl catalogs and reviewers, and want each change to touch only what changed |
 
 Before v0.1 we will run all of these on the same real apps and publish the results, including where
 they do better.
