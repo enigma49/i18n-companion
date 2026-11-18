@@ -1,0 +1,8 @@
+{
+  "name": "fixture-next-no-i18n",
+  "private": true,
+  "dependencies": {
+    "next": "15.5.0",
+    "react": "19.1.0"
+  }
+}

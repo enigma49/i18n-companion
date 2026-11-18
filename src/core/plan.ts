@@ -4,7 +4,7 @@ import {randomBytes} from 'node:crypto';
 import path from 'node:path';
 import ts from 'typescript';
 import {z} from 'zod';
-import {analyzeFile, applyEdits, instrumentFile, type Edit, type PlannedMessage} from '../adapters/next-intl/index.js';
+import {analyzeFile, analyzeSource, applyEdits, instrumentFile, type Edit, type PlannedMessage} from '../adapters/next-intl/index.js';
 import {WORK_DIR} from './config.js';
 import {flatten, getMessage, readCatalog, serializeCatalog, setMessage} from './catalog.js';
 import {CompanionError, diag, hasErrors, type Diagnostic} from './diagnostics.js';
@@ -490,9 +490,14 @@ export async function applyPlan(project: Project, plan: PlanFile): Promise<Apply
   const {root} = project;
   const state = await readState(project);
   const writes: PendingWrite[] = [];
+  // Line numbers in the plan describe the code before rewriting; record the rewritten code's lines,
+  // or the next run would see different occurrences and change the registry again.
+  const rewritten = new Map<string, {file: string; line: number}[]>();
   for (const f of plan.files) {
     const file = path.join(root, f.file);
-    writes.push({file, data: applyEdits(await readFile(file, 'utf8'), f.edits)});
+    const data = applyEdits(await readFile(file, 'utf8'), f.edits);
+    writes.push({file, data});
+    for (const u of analyzeSource(f.file, data).usages) if (u.id) (rewritten.get(u.id) ?? rewritten.set(u.id, []).get(u.id)!).push({file: u.file, line: u.line});
   }
   const sourceFlat = flatten(state.source.tree);
   let sourceChanged = false;
@@ -532,9 +537,11 @@ export async function applyPlan(project: Project, plan: PlanFile): Promise<Apply
     touched.add(s.locale);
   }
   for (const locale of touched) writes.push({file: state.targets[locale]!.file, data: serializeCatalog(state.targets[locale]!)});
-  for (const [id, occ] of Object.entries(plan.occurrences)) {
+  const rewrittenFiles = new Set(plan.files.map((f) => f.file));
+  for (const id of new Set([...Object.keys(plan.occurrences), ...rewritten.keys()])) {
     const msg = state.registry.messages[id];
-    if (msg) msg.occurrences = dedupeOccurrences(occ);
+    const kept = (plan.occurrences[id] ?? []).filter((o) => !rewrittenFiles.has(o.file));
+    if (msg) msg.occurrences = dedupeOccurrences([...kept, ...(rewritten.get(id) ?? [])]);
   }
   writes.push({file: path.join(root, REGISTRY_FILE), data: serializeRegistry(state.registry)});
   try {

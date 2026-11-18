@@ -1,0 +1,10 @@
+{
+  "name": "fixture-unsupported-i18next",
+  "private": true,
+  "dependencies": {
+    "i18next": "25.0.0",
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-i18next": "15.0.0"
+  }
+}

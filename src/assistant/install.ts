@@ -59,7 +59,9 @@ function upsertMcp(existing: string | undefined, format: 'json-mcpServers' | 'to
 function removeMcp(existing: string, format: 'json-mcpServers' | 'toml'): string {
   if (format === 'toml') {
     // Remove only the exact block we wrote; anything a person edited inside it stays.
-    return existing.replace(TOML_BLOCK, '').replace(/\n{3,}/g, '\n\n').replace(/^\n+/, '');
+    // Install added a blank line before the block, so trailing blank lines go too.
+    const rest = existing.replace(TOML_BLOCK, '').replace(/\n{3,}/g, '\n\n').replace(/^\n+/, '');
+    return rest.trim() === '' ? '' : rest.replace(/\s+$/, '\n');
   }
   const data = JSON.parse(existing) as {mcpServers?: Record<string, unknown>};
   if (data.mcpServers) delete data.mcpServers['i18n-companion'];

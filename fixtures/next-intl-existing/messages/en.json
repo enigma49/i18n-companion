@@ -1,0 +1,9 @@
+{
+  "Common": {
+    "cancel": "Cancel",
+    "items": "{count, plural, one {# item} other {# items}}"
+  },
+  "Home": {
+    "title": "Welcome back, {name}"
+  }
+}
