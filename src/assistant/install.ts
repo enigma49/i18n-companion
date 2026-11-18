@@ -116,10 +116,11 @@ export async function planUninstall(root: string): Promise<FileChange[]> {
     const next = removeRule(text);
     changes.push(next.trim() === '' ? {path: rel, action: 'delete', description: 'only contained the i18n-companion block'} : {path: rel, action: 'update', description: 'removes the i18n-companion block', content: next});
   }
-  const mcpFormat = manifest.assistant === 'codex' ? 'toml' : 'json-mcpServers';
   for (const rel of manifest.mcpEntries) {
     const text = await read(root, rel);
     if (!text || !text.includes('i18n-companion')) continue;
+    // The file itself says which format it is; the recorded assistant may not match every entry.
+    const mcpFormat = path.extname(rel) === '.toml' ? 'toml' : 'json-mcpServers';
     changes.push({path: rel, action: 'update', description: 'removes the i18n-companion MCP entry', content: removeMcp(text, mcpFormat)});
   }
   changes.push({path: INSTALL_FILE, action: 'delete', description: 'install record'});
